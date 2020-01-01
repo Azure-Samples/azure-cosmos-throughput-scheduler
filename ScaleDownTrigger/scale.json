@@ -1,0 +1,17 @@
+{
+    "resources":
+    [
+        {
+            "resourceGroup": "MyResourceGroup",
+            "account": "my-cosmos-account",
+            "resourceName": "myDatabase1",
+            "throughput": 400
+        },
+        {
+            "resourceGroup": "MyResourceGroup",
+            "account": "my-cosmos-account",
+            "resourceName": "myDatabase2/myContainer1",
+            "throughput": 400
+        }
+    ]
+}
