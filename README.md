@@ -22,7 +22,7 @@ Taxonomies for products and languages: https://review.docs.microsoft.com/new-hop
 
 This project consists of two Timer Triggers. A ScaleUpTrigger and a ScaleDownTrigger. The ScaleUpTrigger is configured to run at 8am, Monday-Friday and the ScaleDownTrigger is configured to run at 6pm Monday-Friday.
 
-To run this sample, there are three things you need to modify when you clone it locally:
+After cloning this repository locally, there are three things to modify to customize for use:
 
 - **Resources:** Set the Cosmos DB resources to set throughput on for each trigger in `scale.json`
 - **Schedule:** Set the schedule for each trigger in `functions.json`
@@ -30,7 +30,18 @@ To run this sample, there are three things you need to modify when you clone it 
 
 ## Resources
 
-The `scale.json` defaults for this sample are configured to set throughput on both a database resource and a container resource. Each trigger in this solution has its own scale.json file with its own throughput values.
+The `scale.json` specifies the Cosmos DB resources to set throughput on. Each trigger has its own scale.json file with its own throughput values. Within the file you can scale as many Cosmos DB resources as you want and works for all supported Cosmos DB model APIs. 
+
+To scale a shared database or dedicated container-level resource, add an array entry to `scale.json` and specify the following attributes:
+
+- **resourceGroup** - resource group for the Cosmos DB account.
+- **account** - Cosmos DB account name.
+- **resourceName** - database or database\container
+- **throughput** - throughput to set for the resource
+
+*resourceName* must be in `database` or `database\container` format. Here are some examples - SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
+
+The example below demonstrates setting throughput on both a shared database and a dedicated container resource.
 
 ```json
 [
@@ -49,62 +60,45 @@ The `scale.json` defaults for this sample are configured to set throughput on bo
 ]
 ```
 
-> [!CAUTION]
-> You must only put resources in this file which have provisioned throughput. If you put a resource in this file which does not have throughput provisioned it will throw an exception.
-
-### Specify Cosmos DB resources to scale up or down
-
-You can scale as many or as few Cosmos DB resources as you want in a trigger, across any number of Cosmos DB accounts (provided you have set permissions to do so). This sample works for all supported Cosmos DB model APIs. To scale a database or container-level resource, add an array entry to `scale.json` and specify the following attributes:
-
-- **resourceGroup** - resource group for the Cosmos DB account.
-- **account** - Cosmos DB account name.
-- **resourceName** - database or database\container (see below for more details)
-- **throughput** - throughput to set for the resource
-
-**resourceName** must be a `database` for shared resources or a `database\container` format. API specific examples include: SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
-
-
 ## Schedule
 
 Setting the schedule requires changing the "schedule" attribute in each Trigger's `functions.json` to the desires cron expression. To learn more about cron expressions, see [NCRONTAB expressions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp#ncrontab-expressions)
 
 ## Permissions
-### Configuring MSI between Azure Functions and Azure Cosmos DB
 
 When the Azure Function is deployed, you need to give it permissions to set throughput on every Azure Cosmos DB account it will access. To do this you need to create a System assigned Identity in Azure, via Platform Features/Identity and then give that System assigned identity Cosmos DB Operator rights to allow the Azure Function Triggers to set the throughput.
 
 Follow these steps to do this.
 
-#### Step 1
+### Step 1
 
 Open the Azure Function app settings
 ![0.png](media/0.png)
 
-#### Step 2
+### Step 2
 
 Select Identity in Platform Features
 ![1.png](media/1.png)
 
-#### Step 3
+### Step 3
 
 Create a System assigned identity for the Azure Function
 ![2.png](media/2.png)
 
-#### Step 4
+### Step 4
 
 Open the Azure Cosmos DB account you want to let the Azure Function set the throughput for and select Access Control (IAM) and click on "Add" role assignments.
 ![3.PNG](media/3.PNG)
 
-#### Step 5
+### Step 5
 
 Finally, for "Role" select "Cosmos DB Operator", for "Assign access to" select " Function App", then select your subscription and the Azure Function app you have deployed this solution into.
 
 ![4.PNG](media/4.PNG)
 
-
 ## Prerequisites
 
-- There are no prerequisites necessary to run this sample. Simply deploy it with modified timer in `functions.json` and Cosmos DB resources to scale in `scale.json`.
+- There are no prerequisites necessary to run this sample. Simply deploy it with modified timer in `functions.json` and Cosmos DB resources defined in `scale.json`.
 - If you're looking to modify the PowerShell in this sample and are new to running PowerShell in Azure Functions, read [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
 - The [Next Steps](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-powershell#next-steps) will have more details on debugging as well as a PowerShell developer guide.
 
@@ -117,11 +111,6 @@ Clone the repository locally. Open in VS Code.
 - Open the folder in VS Code
 - Edit the function.json file for each trigger to set the time it runs and edit the scale.json to define the resources to set the throughput for each time the trigger runs.
 - To deploy, press F1, choose, "Azure Functions: Deploy to Function app", follow prompts to deploy to existing or create new Functions app in Azure.
-
-> [!IMPORTANT]
-> Azure Functions requires permissions to scale Cosmos DB resources up and down. Follow the steps below to configure each Cosmos DB account for this app.
-
-
 
 ## Contributing
 
