@@ -8,7 +8,7 @@ description: "Scale Cosmos DB resources up/down on a Timer"
 urlFragment: "azure-cosmos-throughput-scheduler"
 ---
 
-# Azure Cosmos DB Scale up/down on a Schedule
+# Scale Cosmos DB up and down on a schedule
 
 ![Build passing](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -20,9 +20,16 @@ Guidance on onboarding samples to docs.microsoft.com/samples: https://review.doc
 Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
 -->
 
-This project consists of two Timer Triggers. A ScaleUpTrigger and a ScaleDownTrigger. The ScaleUpTrigger is configured to run at 8am, Monday-Friday and the ScaleDownTrigger is configured to run at 6pm Monday-Friday.
+This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Set-AzResource to set the throughput property on resources in Cosmos DB. Each trigger has its own `scale.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm Monday-Friday. Typically, the ScaleupTrigger would be run at the start of the day to scale up Cosmos resources and the ScaleDownTrigger at the end of the day to scale resources back down to their minimum value. When scaling resources down the script will check it's allowable minimum throughput and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set.
 
-After cloning this repository locally, there are three things to modify to customize for use:
+## Prerequisites
+
+- Follow the instructions on the Prerequisites section of this article here. [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
+- The [Next Steps](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-powershell#next-steps) will have more details on debugging as well as a PowerShell developer guide.
+
+## Setup
+
+Clone the repository locally. Open in VS Code, then modify the following:
 
 - **Resources:** Set the Cosmos DB resources to set throughput on for each trigger in `scale.json`
 - **Schedule:** Set the schedule for each trigger in `functions.json`
@@ -30,18 +37,18 @@ After cloning this repository locally, there are three things to modify to custo
 
 ## Resources
 
-The `scale.json` specifies the Cosmos DB resources to set throughput on. Each trigger has its own scale.json file with its own throughput values. Within the file you can scale as many Cosmos DB resources as you want and works for all supported Cosmos DB model APIs. 
+Each trigger has its own `scale.json` file. This file specifies the Cosmos DB resources to set throughput on. You can add as many Cosmos DB resources as you want across any number of accounts and will work for all supported Cosmos DB model APIs (SQL, Cassandra, MongoDB, Gremlin, Table).
 
-To scale a shared database or dedicated container-level resource, add an array entry to `scale.json` and specify the following attributes:
+To scale a shared (database-level) or dedicated (container-level) resource, add an array entry to the file with the following attributes:
 
 - **resourceGroup** - resource group for the Cosmos DB account.
 - **account** - Cosmos DB account name.
 - **resourceName** - database or database\container
 - **throughput** - throughput to set for the resource
 
-*resourceName* must be in `database` or `database\container` format. Here are some examples - SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
+*resourceName* must be in `database` or `database\container` format. Some examples - SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
 
-The example below demonstrates setting throughput on both a shared database and a dedicated container resource.
+The example below demonstrates setting throughput on both a database and a container resource in the same Cosmos account.
 
 ```json
 [
@@ -92,19 +99,9 @@ Open the Azure Cosmos DB account you want to let the Azure Function set the thro
 
 ### Step 5
 
-Finally, for "Role" select "Cosmos DB Operator", for "Assign access to" select " Function App", then select your subscription and the Azure Function app you have deployed this solution into.
+Finally, for "Role" select "Cosmos DB Operator", for "Assign access to" select " Function App", then select your subscription and the Azure Function app you have deployed this solution into. **Make sure you click Save**.
 
 ![4.PNG](media/4.PNG)
-
-## Prerequisites
-
-- There are no prerequisites necessary to run this sample. Simply deploy it with modified timer in `functions.json` and Cosmos DB resources defined in `scale.json`.
-- If you're looking to modify the PowerShell in this sample and are new to running PowerShell in Azure Functions, read [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
-- The [Next Steps](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-powershell#next-steps) will have more details on debugging as well as a PowerShell developer guide.
-
-## Setup
-
-Clone the repository locally. Open in VS Code.
 
 ## Running the sample
 
