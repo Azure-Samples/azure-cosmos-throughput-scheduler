@@ -24,8 +24,9 @@ This Azure Functions project is designed to set throughput on Cosmos DB resource
 
 ## Prerequisites
 
-- Follow the instructions on the Prerequisites section of this article here. [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
-- The [Next Steps](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-powershell#next-steps) will have more details on debugging as well as a PowerShell developer guide.
+- Before cloning this repo. follow the instructions on the Prerequisites section of this article here. [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
+- If you're planning on debugging this project locally, see [Debug PowerShell Azure Functions locally](https://docs.microsoft.com/en-us/azure/azure-functions/functions-debug-powershell-local)
+- If you're planning on making major customizations to this sample, check out the [Azure Functions PowerShell developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-powershell)
 
 ## Setup
 
@@ -48,19 +49,19 @@ To scale a shared (database-level) or dedicated (container-level) resource, add 
 
 *resourceName* must be in `database` or `database\container` format. Some examples - SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
 
-The example below demonstrates setting throughput on both a database and a container resource in the same Cosmos account.
+The example below demonstrates setting throughput on a database and a container resource in two different Cosmos accounts.
 
 ```json
 [
     {
         "resourceGroup": "MyResourceGroup",
-        "account": "my-cosmos-account",
+        "account": "my-cosmos-account1",
         "resourceName": "myDatabase1",
         "throughput": 400
     },
     {
         "resourceGroup": "MyResourceGroup",
-        "account": "my-cosmos-account",
+        "account": "my-cosmos-account2",
         "resourceName": "myDatabase2/myContainer1",
         "throughput": 400
     }
