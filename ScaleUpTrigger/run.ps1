@@ -10,7 +10,7 @@ if ($Timer.IsPastDue) {
 }
 
 # Open json file with details on resources to scale up
-$json = (Get-Content ".\ScaleupTrigger\scale.json" -Raw) | ConvertFrom-Json
+$json = (Get-Content ".\ScaleupTrigger\resources.json" -Raw) | ConvertFrom-Json
 
 
 foreach($item in $json.resources)
