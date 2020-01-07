@@ -4,41 +4,34 @@ languages:
 - powershell
 products:
 - Azure Cosmos DB
-description: "Scale Cosmos DB resources up/down on a Timer"
+description: "Scale Cosmos DB resources up-down using Azure Functions Timer Trigger"
 urlFragment: "azure-cosmos-throughput-scheduler"
 ---
 
-# Scale Cosmos DB up and down on a schedule
+# Scale Cosmos DB using Azure Functions Timer Trigger
 
 ![Build passing](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-<!-- 
-Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
-
-Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
-
-Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
--->
-
-This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Set-AzResource to set the throughput property on resources in Cosmos DB. Each trigger has its own `scale.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm Monday-Friday. Typically, the ScaleupTrigger would be run at the start of the day to scale up Cosmos resources and the ScaleDownTrigger at the end of the day to scale resources back down to their minimum value. When scaling resources down the script will check it's allowable minimum throughput and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set.
+This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Set-AzResource to set the throughput property on resources in Cosmos DB. Each trigger has its own `scale.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm Monday-Friday. Typically, the ScaleUpTrigger would be run at the start of the day to scale up Cosmos resources and the ScaleDownTrigger at the end of the day to scale resources back down to their minimum value. When scaling resources down the script will check it's allowable minimum throughput and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set.
 
 ## Prerequisites
 
-- Before cloning this repo. follow the instructions on the Prerequisites section of this article here. [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
-- If you're planning on debugging this project locally, see [Debug PowerShell Azure Functions locally](https://docs.microsoft.com/en-us/azure/azure-functions/functions-debug-powershell-local)
-- If you're planning on making major customizations to this sample, check out the [Azure Functions PowerShell developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-powershell)
+- Before cloning this repo, follow the instructions on the Prerequisites section of this article here. [Create your first PowerShell function in Azure](https://docs.microsoft.com/azure/azure-functions/functions-create-first-function-powershell)
+- If you're planning on debugging this project locally, see [Debug PowerShell Azure Functions locally](https://docs.microsoft.com/azure/azure-functions/functions-debug-powershell-local)
+- If you're planning on making major customizations to this sample, check out the [Azure Functions PowerShell developer guide](https://docs.microsoft.com/azure/azure-functions/functions-reference-powershell)
 
 ## Setup
 
 Clone the repository locally. Open in VS Code, then modify the following:
 
-- **Resources:** Set the Cosmos DB resources to set throughput on for each trigger in `scale.json`
-- **Schedule:** Set the schedule for each trigger in `functions.json`
-- **Permissions:** Set the permissions for the Azure Function to set the throughput on the Cosmos DB account
+- **Resources:** Set the Cosmos DB resources to set throughput on for each trigger in `resources.json`
+- **Schedule:** Set the schedule for each trigger in `function.json`
+- **Deploy:** Deploy the Azure Functions app to your Azure subscription
+- **Permissions:** Create system identity for the app and grant permissions
 
 ## Resources
 
-Each trigger has its own `scale.json` file. This file specifies the Cosmos DB resources to set throughput on. You can add as many Cosmos DB resources as you want across any number of accounts and will work for all supported Cosmos DB model APIs (SQL, Cassandra, MongoDB, Gremlin, Table).
+Each trigger has its own `resources.json` file. This file specifies the Cosmos DB resources to set throughput on. You can add as many Cosmos DB resources as you want across any number of accounts and will work for all supported Cosmos DB model APIs (SQL, Cassandra, MongoDB, Gremlin, Table).
 
 To scale a shared (database-level) or dedicated (container-level) resource, add an array entry to the file with the following attributes:
 
@@ -52,29 +45,36 @@ To scale a shared (database-level) or dedicated (container-level) resource, add 
 The example below demonstrates setting throughput on a database and a container resource in two different Cosmos accounts.
 
 ```json
-[
-    {
-        "resourceGroup": "MyResourceGroup",
-        "account": "my-cosmos-account1",
-        "resourceName": "myDatabase1",
-        "throughput": 400
-    },
-    {
-        "resourceGroup": "MyResourceGroup",
-        "account": "my-cosmos-account2",
-        "resourceName": "myDatabase2/myContainer1",
-        "throughput": 400
-    }
-]
+{
+    "resources":
+    [
+        {
+            "resourceGroup": "MyResourceGroup",
+            "account": "my-cosmos-account1",
+            "resourceName": "myDatabase1",
+            "throughput": 400
+        },
+        {
+            "resourceGroup": "MyResourceGroup",
+            "account": "my-cosmos-account2",
+            "resourceName": "myDatabase2/myContainer1",
+            "throughput": 400
+        }
+    ]
+}
 ```
 
 ## Schedule
 
-Setting the schedule requires changing the "schedule" attribute in each Trigger's `functions.json` to the desires cron expression. To learn more about cron expressions, see [NCRONTAB expressions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp#ncrontab-expressions)
+Setting the schedule requires changing the "schedule" attribute in each Trigger's `function.json` to the desires cron expression. To learn more about cron expressions, see [NCRONTAB expressions](https://docs.microsoft.com/azure/azure-functions/functions-bindings-timer?tabs=csharp#ncrontab-expressions)
+
+## Deploy
+
+To deploy this app, in VS Code, press F1, choose, "Azure Functions: Deploy to Function app", follow prompts to deploy to existing or create new Functions app in Azure.
 
 ## Permissions
 
-When the Azure Function is deployed, you need to give it permissions to set throughput on every Azure Cosmos DB account it will access. To do this you need to create a System assigned Identity in Azure, via Platform Features/Identity and then give that System assigned identity Cosmos DB Operator rights to allow the Azure Function Triggers to set the throughput.
+After the Azure Function app is deployed, you need to give it permissions to set throughput on every Azure Cosmos DB account it will access. To do this you need to create a system assigned identity in Azure and then give the system assigned identity Cosmos DB Operator rights to allow the Azure Function Triggers to set the throughput.
 
 Follow these steps to do this.
 
@@ -95,7 +95,7 @@ Create a System assigned identity for the Azure Function
 
 ### Step 4
 
-Open the Azure Cosmos DB account you want to let the Azure Function set the throughput for and select Access Control (IAM) and click on "Add" role assignments.
+Open each Azure Cosmos DB account you want to let the Azure Function set the throughput for and select Access Control (IAM) and click on "Add" role assignments.
 ![3.PNG](media/3.PNG)
 
 ### Step 5
@@ -104,11 +104,7 @@ Finally, for "Role" select "Cosmos DB Operator", for "Assign access to" select "
 
 ![4.PNG](media/4.PNG)
 
-## Running the sample
-
-- Open the folder in VS Code
-- Edit the function.json file for each trigger to set the time it runs and edit the scale.json to define the resources to set the throughput for each time the trigger runs.
-- To deploy, press F1, choose, "Azure Functions: Deploy to Function app", follow prompts to deploy to existing or create new Functions app in Azure.
+To test, run one of the triggers in the Azure Function and monitor the console output.
 
 ## Contributing
 
