@@ -18,7 +18,7 @@ foreach($item in $json.resources)
     $resourceGroup = $item.resourceGroup
     $account = $item.account
     $resourceName = $item.resourceName
-    $throughput = $item.throughput
+    $throughput = $item.throughput -as [Int32]
 
     # Determine if shared or dedicated throughput resource
     $isDedicatedThroughput = Select-String -Pattern "/" -InputObject $resourceName | Select-Object -ExpandProperty Matches | Select-Object -ExpandProperty Index
@@ -85,11 +85,12 @@ foreach($item in $json.resources)
     $minThroughput = Get-AzResource -ResourceType $resourceType `
     -ApiVersion "2019-08-01" -ResourceGroupName $resourceGroup `
     -Name $name | Select-Object -ExpandProperty Properties | Select-Object -ExpandProperty Resource | Select-Object -ExpandProperty minimumThroughput
-
+    
+    $minThroughput = $minThroughput -as [Int32]
     if($minThroughput -gt $throughput)
     {
         Write-Host "Cannot reduce throughput to $throughput RU/s, reducing to minimum allowed throughput, $minThroughput RU/s"
-        $throughput = $minThroughput -as [Int32]
+        $throughput = $minThroughput
     }
 
     # Set the throughput property and value for the resource
