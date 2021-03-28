@@ -12,7 +12,14 @@ urlFragment: "azure-cosmos-throughput-scheduler"
 
 ![Build passing](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Az.CosmosDB cmdlets to set the throughput property on resources in Cosmos DB. Each trigger has its own `resources.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am UTC, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm UTC Monday-Friday. When scaling resources the script will check the minimum throughput on the resource and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set. This sample cannot migrate between manual and autoscale throughput. If the wrong type of throughput is specified it will report an error and skip over it. If you set throughput on a resource that does not have throughput provisioned, it will report an error and skip over it. This Azure Function connects to the Cosmos resources using MSI. You will need to create an identity for the app and grant it permissions to the Cosmos accounts to set throughput on.
+This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Az.CosmosDB cmdlets to set the throughput property on resources in Cosmos DB. Resources to scale up and down are defined in a `resources.json` file within each Trigger with the schedule defined in `function.json`. The ScaleUpTrigger is configured to run at 8am UTC, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm UTC Monday-Friday.
+
+## Key things to know
+
+- When executing, the script will check the minimum throughput for the resource. If the throughput is set lower than the minimum allowed, the script will set the throughput at the minimum rather than throw an exception.
+- This sample cannot migrate between manual and autoscale throughput. (May do this in a future update). If the wrong type of throughput is specified it will report an error and skip over it.
+- If you set throughput on a resource that does not have throughput provisioned, it will report an error and skip over it.
+- This Azure Function connects to the Cosmos resources using MSI. You will need to create an identity for the app and grant it permissions to the Cosmos accounts to set throughput on. Details on how to configure MSI and set permissions is detailed below.
 
 > [!IMPORTANT]
 > If you are planning on setting throughput to a very large amount it is recommended you first do this through the portal before using this tool. Large scale up operations can take quite a bit of time the very first time you do them and may cause the Azure Function to time out or throw an exception waiting for the script to complete. Once you do the initial scale up, you can scale back down and then use this tool to automate.
@@ -25,7 +32,7 @@ This Azure Functions project is designed to set throughput on Cosmos DB resource
 
 ## Setup
 
-Clone the repository locally. Open in VS Code, then modify the following:
+Clone the repository locally. Open in VS Code, then modify or do the following:
 
 - **Resources:** Set the Cosmos DB resources to set throughput on for each trigger in `resources.json`
 - **Schedule:** Set the schedule for each trigger in `function.json`
@@ -62,7 +69,7 @@ The example below demonstrates setting throughput on a database and a container 
             "throughput": 400
         },
         {
-            "resourceGroup": "MyResourceGroup",
+            "resourceGroup": "MyResourceGroup2",
             "account": "my-cosmos-account2",
             "api": "gremlin",
             "throughputType": "autoscale",
