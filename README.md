@@ -12,7 +12,7 @@ urlFragment: "azure-cosmos-throughput-scheduler"
 
 ![Build passing](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Set-AzResource to set the throughput property on resources in Cosmos DB. Each trigger has its own `resources.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am UTC, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm UTC Monday-Friday. When scaling resources the script will check the minimum throughput on the resource and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set.
+This Azure Functions project is designed to set throughput on Cosmos DB resources twice a day using two Timer Triggers. The triggers are written in PowerShell and call Az.CosmosDB cmdlets to set the throughput property on resources in Cosmos DB. Each trigger has its own `resources.json` file which defines what resources to set throughput on. Each trigger also has its own schedule, defined in `function.json`. The ScaleUpTrigger is configured to run at 8am UTC, Monday-Friday. The ScaleDownTrigger is configured to run at 6pm UTC Monday-Friday. When scaling resources the script will check the minimum throughput on the resource and ensure it is not set any lower to prevent an exception from being thrown. Otherwise, it will scale to the level you set. This sample cannot migrate between manual and autoscale throughput. If the wrong type of throughput is specified it will report an error and skip over it. If you set throughput on a resource that does not have throughput provisioned, it will report an error and skip over it. This Azure Function connects to the Cosmos resources using MSI. You will need to create an identity for the app and grant it permissions to the Cosmos accounts to set throughput on.
 
 > [!IMPORTANT]
 > If you are planning on setting throughput to a very large amount it is recommended you first do this through the portal before using this tool. Large scale up operations can take quite a bit of time the very first time you do them and may cause the Azure Function to time out or throw an exception waiting for the script to complete. Once you do the initial scale up, you can scale back down and then use this tool to automate.
@@ -38,10 +38,12 @@ Each trigger has its own `resources.json` file. This file specifies the Cosmos D
 
 To scale a shared (database-level) or dedicated (container-level) resource, add an array entry to the file with the following attributes:
 
-- **resourceGroup** - resource group for the Cosmos DB account.
-- **account** - Cosmos DB account name.
-- **resourceName** - database or database\container
-- **throughput** - throughput to set for the resource
+- **resourceGroupName** - resource group for the Cosmos DB account.
+- **accountName** - Cosmos DB account name.
+- **api** - Api type (sql, mongodb, cassandra, gremin, table).
+- **throughputType** - (manual or autoscale).
+- **resourceName** - database or database\container.
+- **throughput** - throughput to set for the resource.
 
 *resourceName* must be in `database` or `database\container` format. Some examples - SQL: `database1\container1`, Cassandra: `keyspace1\table1`, MongoDB: `database1\collection1`, Gremlin: `database1\graph1`, or Table: `table1`.
 
@@ -54,14 +56,18 @@ The example below demonstrates setting throughput on a database and a container 
         {
             "resourceGroup": "MyResourceGroup",
             "account": "my-cosmos-account1",
+            "api": "sql",
+            "throughputType": "manual",
             "resourceName": "myDatabase1",
             "throughput": 400
         },
         {
             "resourceGroup": "MyResourceGroup",
             "account": "my-cosmos-account2",
-            "resourceName": "myDatabase2/myContainer1",
-            "throughput": 400
+            "api": "gremlin",
+            "throughputType": "autoscale",
+            "resourceName": "myDatabase2/myGraph1",
+            "throughput": 4000
         }
     ]
 }

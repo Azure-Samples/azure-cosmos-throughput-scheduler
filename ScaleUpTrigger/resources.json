@@ -2,16 +2,20 @@
     "resources":
     [
         {
-            "resourceGroup": "MyResourceGroup",
-            "account": "my-cosmos-account",
-            "resourceName": "myDatabase1",
-            "throughput": 1000
+            "resourceGroupName": "MyResourceGroup",
+            "accountName": "my-cosmos-account",
+            "api": "sql",
+            "throughputType": "autoscale",
+            "resourceName": "database1",
+            "throughput": 4000
         },
         {
-            "resourceGroup": "MyResourceGroup",
-            "account": "my-cosmos-account",
-            "resourceName": "myDatabase2/myContainer1",
-            "throughput": 800
+            "resourceGroupName": "MyResourceGroup",
+            "accountName": "my-cosmos-account-2",
+            "api": "sql",
+            "throughputType": "manual",
+            "resourceName": "database2/container1",
+            "throughput": 400
         }
     ]
 }

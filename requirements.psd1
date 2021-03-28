@@ -2,5 +2,5 @@
 # See https://aka.ms/functionsmanageddependency for additional information.
 #
 @{
-    'Az' = '3.*'
+    'Az' = '5.7.0'
 }
