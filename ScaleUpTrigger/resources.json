@@ -4,7 +4,7 @@
         {
             "resourceGroupName": "MyResourceGroup",
             "accountName": "my-cosmos-account",
-            "api": "sql",
+            "api": "nosql",
             "throughputType": "autoscale",
             "resourceName": "database1",
             "throughput": 4000
@@ -12,7 +12,7 @@
         {
             "resourceGroupName": "MyResourceGroup",
             "accountName": "my-cosmos-account-2",
-            "api": "sql",
+            "api": "nosql",
             "throughputType": "manual",
             "resourceName": "database2/container1",
             "throughput": 400

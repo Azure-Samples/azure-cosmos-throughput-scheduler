@@ -8,7 +8,7 @@ description: "Scale Cosmos DB resources up-down using Azure Functions Timer Trig
 urlFragment: "azure-cosmos-throughput-scheduler"
 ---
 
-# Scale Cosmos DB using Azure Functions Timer Trigger
+# Scale Azure Cosmos DB using Azure Functions Timer Trigger
 
 ![Build passing](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Code coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -41,13 +41,13 @@ Clone the repository locally. Open in VS Code, then modify or do the following:
 
 ## Resources
 
-Each trigger has its own `resources.json` file. This file specifies the Cosmos DB resources to set throughput on. You can add as many Cosmos DB resources as you want across any number of accounts and will work for all supported Cosmos DB model APIs (SQL, Cassandra, MongoDB, Gremlin, Table).
+Each trigger has its own `resources.json` file. This file specifies the Cosmos DB resources to set throughput on. You can add as many Cosmos DB resources as you want across any number of accounts and will work for all supported Cosmos DB model APIs (NoSQL, Cassandra, MongoDB, Gremlin, Table).
 
 To scale a shared (database-level) or dedicated (container-level) resource, add an array entry to the file with the following attributes:
 
 - **resourceGroupName** - resource group for the Cosmos DB account.
 - **accountName** - Cosmos DB account name.
-- **api** - Api type (sql, mongodb, cassandra, gremin, table).
+- **api** - Api type (nosql, mongodb, cassandra, gremin, table).
 - **throughputType** - (manual or autoscale).
 - **resourceName** - database or database\container.
 - **throughput** - throughput to set for the resource.
@@ -63,7 +63,7 @@ The example below demonstrates setting throughput on a database and a container 
         {
             "resourceGroup": "MyResourceGroup",
             "account": "my-cosmos-account1",
-            "api": "sql",
+            "api": "nosql",
             "throughputType": "manual",
             "resourceName": "myDatabase1",
             "throughput": 400

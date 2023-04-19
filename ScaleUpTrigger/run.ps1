@@ -10,14 +10,14 @@ if ($Timer.IsPastDue) {
 }
 
 # Open json file with details on resources to scale up
-$json = (Get-Content ".\ScaleupTrigger\resources.json" -Raw) | ConvertFrom-Json
+$json = (Get-Content ".\ScaleUpTrigger\resources.json" -Raw) | ConvertFrom-Json
 
 
 foreach($item in $json.resources){
 
     $resourceGroupName = $item.resourceGroupName
     $accountName = $item.accountName
-    $api = $item.api #sql, cassandra, gremlin, mongodb, table
+    $api = $item.api #nosql, cassandra, gremlin, mongodb, table
     $throughputType = $item.throughputType #manual, autoscale
     $resourceName = $item.resourceName
     $throughput = $item.throughput
@@ -42,13 +42,13 @@ foreach($item in $json.resources){
     Write-Host "Throughput = $throughput"
 
     switch($api){
-        "sql"{
+        "nosql"{
             if($isDedicatedThroughput){ #container level throughput
 
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBSqlContainerThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -DatabaseName $resourceArray[0] -Name $resourceArray[1] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -68,7 +68,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBSqlDatabaseThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -Name $resourceArray[0] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -89,7 +89,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBMongoDBCollectionThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -DatabaseName $resourceArray[0] -Name $resourceArray[1] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -109,7 +109,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBMongoDBDatabaseThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -Name $resourceArray[0] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -130,7 +130,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBCassandraTableThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -KeyspaceName $resourceArray[0] -Name $resourceArray[1] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -150,7 +150,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBCassandraKeyspaceThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -Name $resourceArray[0] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -171,7 +171,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBGremlinGraphThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -DatabaseName $resourceArray[0] -Name $resourceArray[1] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -191,7 +191,7 @@ foreach($item in $json.resources){
                 # Ensure throughput is not set below the Minimum Throughput for the resource.
                 $minThroughput = Get-AzCosmosDBGremlinDatabaseThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -Name $resourceArray[0] | Select-Object -ExpandProperty MinimumThroughput
 
-                if($minThroughput -gt $throughput)
+                if($minThroughput as [Int32] -gt $throughput as [Int32])
                 {
                     Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                     $throughput = $minThroughput -as [Int32]
@@ -212,7 +212,7 @@ foreach($item in $json.resources){
             # Ensure throughput is not set below the Minimum Throughput for the resource.
             $minThroughput = Get-AzCosmosDBTableThroughput -ResourceGroupName $resourceGroupName -AccountName $accountName -Name $resourceArray[0] | Select-Object -ExpandProperty MinimumThroughput
 
-            if($minThroughput -gt $throughput)
+            if($minThroughput as [Int32] -gt $throughput as [Int32])
             {
                 Write-Host "Cannot set throughput to $throughput RU/s, below minimum throughput, setting to minimum allowed throughput, $minThroughput RU/s"
                 $throughput = $minThroughput -as [Int32]
